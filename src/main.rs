@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use clap::Parser;
-use image::{self, GenericImage, DynamicImage, imageops, GenericImageView, ImageBuffer};
+use image::{self, DynamicImage, GenericImageView, ImageBuffer};
 
 /// Default values
 const LINES: u32 = 32;
@@ -42,20 +42,37 @@ where
     // Open image
     let img = image::open(in_path)?;
 
+    // Convert to grayscale and average the rows
+    let out = average_rows(&img, config);
+
+    out.save(out_path)?;
+
+    return Ok(out);
+}
+
+fn average_rows(
+    img: &DynamicImage, 
+    config: &LineShadingConfig
+) -> DynamicImage {
     // Convert to grayscale. Using `grayscale()` was leaving the image in Rgba8,
     // which means we'd have to deal with 3 channels.
-    let img = img.into_luma8();
+    let img = img.clone().into_luma8(); // TODO: Is clone really needed?
 
-    // Grab the image dimensions and create an empty image buffer to store the
-    // averaged rows. 
+    // Grab the image dimensions and force config.lines <= height
     let (width, height) = img.dimensions();
+    let lines = if config.lines <= height { config.lines } else { height };
+
+    // Create an empty image buffer to store the averaged rows.
     let mut out = ImageBuffer::new(width, height);
 
-    // Vertical height of each row
-    let row_h = height / config.lines;
-    
     // Iterate over the rows
-    for y in (0..height).step_by(row_h as usize) {
+    let mut y = 0;
+    let mut n_rows = 0;
+    while y < (height - 1) {
+        // Vertical height of current row
+        let row_h = (height - y) / (lines - n_rows);
+        n_rows += 1;
+
         // Iterate over the columns in each row
         for x in 0..width {
             // Grab a 1 pixel wide vertical slice of each row
@@ -70,21 +87,16 @@ where
                 })
                 .sum::<u32>() / (w * h);
             let avg: u8 = avg.try_into().unwrap();
-
+            
             // Write the average value to the pixels that were averaged
             for yd in 0..row_h {
                 out.put_pixel(x, y + yd, image::Luma([avg]));
             }
         }
+        y += row_h;
     }
 
-    out.save(out_path)?;
-
-    return Ok(DynamicImage::ImageLuma8(out));
-}
-
-fn average_rows(img: DynamicImage) -> DynamicImage {
-    return img;
+    return DynamicImage::ImageLuma8(out);
 }
 
 fn main() {

@@ -32,12 +32,12 @@ impl Default for LineShadingConfig {
 }
 
 fn process_image<P>(
-    in_path: P, 
-    out_path: P, 
+    in_path: P,
+    out_path: P,
     config: &LineShadingConfig,
 ) -> image::ImageResult<image::DynamicImage>
 where
-    P: AsRef<std::path::Path>
+    P: AsRef<std::path::Path>,
 {
     // Open image
     let img = image::open(in_path)?;
@@ -50,17 +50,18 @@ where
     return Ok(out);
 }
 
-fn average_rows(
-    img: &DynamicImage, 
-    config: &LineShadingConfig
-) -> DynamicImage {
+fn average_rows(img: &DynamicImage, config: &LineShadingConfig) -> DynamicImage {
     // Convert to grayscale. Using `grayscale()` was leaving the image in Rgba8,
     // which means we'd have to deal with 3 channels.
     let img = img.clone().into_luma8(); // TODO: Is clone really needed?
 
     // Grab the image dimensions and force config.lines <= height
     let (width, height) = img.dimensions();
-    let lines = if config.lines <= height { config.lines } else { height };
+    let lines = if config.lines <= height {
+        config.lines
+    } else {
+        height
+    };
 
     // Create an empty image buffer to store the averaged rows.
     let mut out = ImageBuffer::new(width, height);
@@ -82,12 +83,11 @@ fn average_rows(
             // Average the vertical slice
             let avg = row
                 .pixels()
-                .map(|(_, _, pixel)| {
-                    pixel.0[0] as u32
-                })
-                .sum::<u32>() / (w * h);
+                .map(|(_, _, pixel)| pixel.0[0] as u32)
+                .sum::<u32>()
+                / (w * h);
             let avg: u8 = avg.try_into().unwrap();
-            
+
             // Write the average value to the pixels that were averaged
             for yd in 0..row_h {
                 out.put_pixel(x, y + yd, image::Luma([avg]));
@@ -105,18 +105,11 @@ fn main() {
     let mut out_path = cli.input.clone();
     out_path.set_extension("jpg");
 
-    let config = LineShadingConfig {
-        lines: cli.lines,
-    };
+    let config = LineShadingConfig { lines: cli.lines };
 
-    if let Ok(_) = process_image(
-        cli.input.as_path(), 
-        out_path.as_path(),
-        &config,
-    ) {
+    if let Ok(_) = process_image(cli.input.as_path(), out_path.as_path(), &config) {
         println!("Successfully saved image.");
     } else {
         eprintln!("Could not read file at: {}", cli.input.display());
     }
-
 }

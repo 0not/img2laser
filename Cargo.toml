@@ -8,3 +8,5 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.1.10", features = ["derive"] }
 image = "0.24.5"
+plotters = "0.3.4"
+svg = "0.13.0"

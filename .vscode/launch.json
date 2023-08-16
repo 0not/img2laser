@@ -1,0 +1,82 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'img2laser'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=img2laser",
+                    "--package=img2laser"
+                ],
+                "filter": {
+                    "name": "img2laser",
+                    "kind": "bin"
+                }
+            },
+            "args": ["examples/example_4.png"],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'img2laser'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=img2laser",
+                    "--package=img2laser"
+                ],
+                "filter": {
+                    "name": "img2laser",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'svg_test'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=svg_test",
+                    "--package=img2laser"
+                ],
+                "filter": {
+                    "name": "svg_test",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'svg_test'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=svg_test",
+                    "--package=img2laser"
+                ],
+                "filter": {
+                    "name": "svg_test",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

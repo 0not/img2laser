@@ -1,26 +1,40 @@
-use clap::Parser;
+#![allow(non_snake_case)]
+use dioxus::prelude::*;
 
-fn main() -> Result<(), img2laser::ImageProcessError> {
-    let config = img2laser::SinusoidShadingConfig::parse();
+use image;
 
-    // Set filename for output image, if not in config
-    let out_path = match config.output.to_owned() {
-        Some(path) => path,
-        None => {
-            let mut out_path = config.input.clone();
-            out_path.set_extension("svg");
-            out_path
-        }
+const IMAGE: &[u8] = include_bytes!("../examples/example_1.png");
+
+fn main() {
+    // launch the web app
+    dioxus_web::launch(App);
+}
+
+// create a component that renders a div with the text "Hello, world!"
+fn App(cx: Scope) -> Element {
+    let config = img2laser::SinusoidShadingConfig {
+        lines: 90,
+        min_freq: 0.001,
+        max_freq: 2.,
+        sample_freq: 5.,
+        ..Default::default()
     };
 
     // Open image
-    let img = image::open(config.input.as_path())?;
+    // let img = image::open(config.input.as_path())?;
+    let img = image::load_from_memory(IMAGE).expect("Couldn't load image");
 
     // Process image
-    let svg_img = img2laser::process_image(&img, &config);
+    let svg_img = img2laser::process_image(&img, &config).to_string();
 
     // Save image
-    svg::save(out_path, &svg_img)?;
+    // svg::save(out_path, &svg_img)?;
 
-    Ok(())
+    cx.render(rsx! {
+        div {
+            width: "512px",
+            display: "inline-block",
+            dangerous_inner_html: "{svg_img}",
+        },
+    })
 }

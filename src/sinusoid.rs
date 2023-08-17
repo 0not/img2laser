@@ -142,11 +142,10 @@ pub fn process_image(img: &DynamicImage, config: &SinusoidShadingConfig) -> Docu
         .set("stroke-width", 1)
         .set("d", data);
 
-    let document = Document::new().add(path);
+    let document = Document::new()
+        .set("viewBox", (0, 0, width, height))
+        .add(path);
 
-    // svg::save(out_path, &document)?;
-
-    // Ok(())
     document
 }
 

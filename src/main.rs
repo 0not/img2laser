@@ -1,6 +1,6 @@
 use clap::Parser;
 
-fn main() {
+fn main() -> Result<(), img2laser::ImageProcessError> {
     let config = img2laser::SinusoidShadingConfig::parse();
 
     // Set filename for output image, if not in config
@@ -13,9 +13,14 @@ fn main() {
         }
     };
 
-    if let Ok(_) = img2laser::process_image(config.input.as_path(), out_path.as_path(), &config) {
-        println!("Successfully saved image.");
-    } else {
-        eprintln!("Could not read file at: {}", config.input.display());
-    }
+    // Open image
+    let img = image::open(config.input.as_path())?;
+
+    // Process image
+    let svg_img = img2laser::process_image(&img, &config);
+
+    // Save image
+    svg::save(out_path, &svg_img)?;
+
+    Ok(())
 }

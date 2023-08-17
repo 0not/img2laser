@@ -89,23 +89,13 @@ pub enum ImageProcessError {
     IOError(#[from] std::io::Error),
 }
 
-pub fn process_image<P>(
-    in_path: P,
-    out_path: P,
-    config: &SinusoidShadingConfig,
-) -> Result<(), ImageProcessError>
-where
-    P: AsRef<std::path::Path>,
-{
+pub fn process_image(img: &DynamicImage, config: &SinusoidShadingConfig) -> Document {
     // Spatial sampling frequency
     let fs = config.sample_freq;
     let width = config.width;
     let height = config.height;
     let row_height = height as f32 / config.lines as f32;
     let amp = config.amplitude * row_height;
-
-    // Open image
-    let img = image::open(in_path)?;
 
     // Average the rows
     let avgs = average_rows(&img, config);
@@ -154,9 +144,10 @@ where
 
     let document = Document::new().add(path);
 
-    svg::save(out_path, &document)?;
+    // svg::save(out_path, &document)?;
 
-    Ok(())
+    // Ok(())
+    document
 }
 
 fn average_rows(img: &DynamicImage, config: &SinusoidShadingConfig) -> Array2<u8> {

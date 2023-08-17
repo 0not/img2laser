@@ -1,2 +1,2 @@
 mod sinusoid;
-pub use sinusoid::{process_image, SinusoidShadingConfig};
+pub use sinusoid::{process_image, ImageProcessError, SinusoidShadingConfig};

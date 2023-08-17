@@ -19,21 +19,6 @@ const MIN_FREQ: f32 = 0.001;
 const MAX_FREQ: f32 = 0.5;
 const AMPLITUDE: f32 = 0.4;
 
-/// A program that takes in a bitmap image and outputs a line shaded SVG
-// #[derive(Parser)]
-// #[command(author, version, about, long_about = None)]
-// struct Cli {
-//     /// Input image path
-//     input: PathBuf,
-
-//     /// Output SVG path
-//     output: Option<PathBuf>,
-
-//     /// Number of lines
-//     #[arg(short, long, default_value_t = LINES)]
-//     lines: usize,
-// }
-
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct SinusoidShadingConfig {
@@ -43,7 +28,7 @@ struct SinusoidShadingConfig {
     /// Output SVG path
     output: Option<PathBuf>,
 
-    /// Number of sinusoids to create
+    /// Number of sinusoids, or rows, to create
     #[arg(long, default_value_t = LINES)]
     lines: usize,
 
@@ -245,7 +230,7 @@ fn make_lines(img: &Array2<u8>, config: &SinusoidShadingConfig) -> Array2<f32> {
         }
 
         f.accumulate_axis_inplace(Axis(0), |&prev, curr| *curr += prev);
-        //f /= fs;
+        f /= fs;
         phi.slice_mut(s![r, ..]).assign(&f);
     }
 

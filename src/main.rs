@@ -12,50 +12,79 @@ use svg::Document;
 
 /// Default values
 const LINES: usize = 64;
+const WIDTH: usize = 512;
+const HEIGHT: usize = 512;
+const SAMPLE_FREQ: f32 = 10.;
+const MIN_FREQ: f32 = 0.001;
+const MAX_FREQ: f32 = 0.5;
+const AMPLITUDE: f32 = 0.4;
 
 /// A program that takes in a bitmap image and outputs a line shaded SVG
+// #[derive(Parser)]
+// #[command(author, version, about, long_about = None)]
+// struct Cli {
+//     /// Input image path
+//     input: PathBuf,
+
+//     /// Output SVG path
+//     output: Option<PathBuf>,
+
+//     /// Number of lines
+//     #[arg(short, long, default_value_t = LINES)]
+//     lines: usize,
+// }
+
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
-struct Cli {
+struct SinusoidShadingConfig {
     /// Input image path
     input: PathBuf,
 
     /// Output SVG path
     output: Option<PathBuf>,
 
-    /// Number of lines
-    #[arg(short, long, default_value_t = LINES)]
+    /// Number of sinusoids to create
+    #[arg(long, default_value_t = LINES)]
     lines: usize,
-}
 
-struct LineShadingConfig {
-    lines: usize,
-    svg_config: SvgConfig,
-}
-
-impl Default for LineShadingConfig {
-    fn default() -> Self {
-        LineShadingConfig {
-            lines: LINES,
-            svg_config: SvgConfig::default(),
-        }
-    }
-}
-
-struct SvgConfig {
+    /// Output image width
+    #[arg(long, default_value_t = WIDTH)]
     width: usize,
+
+    /// Output image height  
+    #[arg(long, default_value_t = HEIGHT)]
     height: usize,
-    fs: f32, // spatial sample frequency
-    amp: f32,
+
+    /// Spatial sample frequency. A larger number means the resulting sinusoid
+    /// will contain more points.
+    #[arg(long, default_value_t = SAMPLE_FREQ)]
+    sample_freq: f32,
+
+    /// Minimum sinusoid frequency
+    #[arg(long, default_value_t = MIN_FREQ)]
+    min_freq: f32,
+
+    /// Maximum sinusoid frequency
+    #[arg(long, default_value_t = MAX_FREQ)]
+    max_freq: f32,
+
+    /// Sinusoid amplitude (when constant) TODO: Implement amplitude modulation.
+    #[arg(long, default_value_t = AMPLITUDE)]
+    amplitude: f32,
 }
 
-impl Default for SvgConfig {
+impl Default for SinusoidShadingConfig {
     fn default() -> Self {
-        SvgConfig {
-            width: 512,
-            height: 512,
-            fs: 10., // spatial sample frequency
-            amp: 0.4,
+        SinusoidShadingConfig {
+            input: PathBuf::from("image.png"),
+            output: Some(PathBuf::from("image.svg")),
+            lines: LINES,
+            width: WIDTH,
+            height: HEIGHT,
+            sample_freq: SAMPLE_FREQ,
+            min_freq: MIN_FREQ,
+            max_freq: MAX_FREQ,
+            amplitude: AMPLITUDE,
         }
     }
 }
@@ -74,39 +103,41 @@ enum ImageProcessError {
 fn process_image<P>(
     in_path: P,
     out_path: P,
-    config: &LineShadingConfig,
+    config: &SinusoidShadingConfig,
 ) -> Result<(), ImageProcessError>
 where
     P: AsRef<std::path::Path>,
 {
     // Spatial sampling frequency
-    let fs = config.svg_config.fs;
-    let width = config.svg_config.width;
-    let height = config.svg_config.height;
+    let fs = config.sample_freq;
+    let width = config.width;
+    let height = config.height;
     let row_height = height as f32 / config.lines as f32;
-    let amp = config.svg_config.amp * row_height;
+    let amp = config.amplitude * row_height;
 
     // Open image
     let img = image::open(in_path)?;
 
     // Average the rows
     let avgs = average_rows(&img, config);
-    let lines = make_lines(&avgs);
+    let lines = make_lines(&avgs, config);
     // let (rows, samples) = lines.dim();
 
     let mut data = Data::new();
     for (yi, row) in lines.axis_iter(Axis(0)).enumerate() {
-        // TODO: Everything should be shifted down by half of a row so that the
-        // first row is not cut off. Will need to address the bottom too.
-        // I think row_height will need to be adjust to accout for the amplitude
-        // of the sine wave.
-        let y_offset = yi as f32 * row_height;
+        // `y_offset` increases for each row by `row_height`. A global shift of
+        // 0.5 is added to `yi` so that the first sinusoid doesn't overflow the
+        // top boundary.
+        let y_offset = (0.5 + yi as f32) * row_height;
+
+        let x_max = row.len() as f32 / fs;
 
         let sine = row
             .iter()
             .enumerate()
             .flat_map(|(xi, &y)| {
-                let x = xi as f32 / fs;
+                let x_scale = width as f32 / x_max;
+                let x = x_scale * (xi as f32 / fs);
 
                 vec![x, amp * y + y_offset]
             })
@@ -122,29 +153,20 @@ where
     let path = Path::new()
         .set("fill", "none")
         .set("stroke", "black")
-        .set("stroke-width", 0.1)
+        .set("stroke-width", 1)
         .set("d", data);
 
     let document = Document::new()
-        .set("viewBox", (0, 0, width, height))
+        // .set("viewBox", (0, 0, width, height))
         .add(path);
 
     svg::save(out_path, &document)?;
-
-    // println!("{:?}", lines);
-
-    // println!("{:?}", avgs);
-
-    // // Resize averaged image to original size
-    // let new_img = GrayImage::from_raw(512, config.lines as u32, avgs.into_raw_vec()).unwrap();
-    // let new_img = image::imageops::resize(&new_img, 512, 512, image::imageops::FilterType::Nearest);
-    // new_img.save("examples/gray_2.png")?;
 
     Ok(())
 }
 
 // TODO: Add support for transparency (locations where no line will be drawn)
-fn average_rows(img: &DynamicImage, config: &LineShadingConfig) -> Array2<u8> {
+fn average_rows(img: &DynamicImage, config: &SinusoidShadingConfig) -> Array2<u8> {
     // Grab the image dimensions and force config.lines <= height
     let (width, height) = img.dimensions();
 
@@ -175,18 +197,17 @@ fn average_rows(img: &DynamicImage, config: &LineShadingConfig) -> Array2<u8> {
     result.mapv(|e| e as u8)
 }
 
-fn make_lines(img: &Array2<u8>) -> Array2<f32> {
+fn make_lines(img: &Array2<u8>, config: &SinusoidShadingConfig) -> Array2<f32> {
     // Spatial "sampling frequency". If lower, the processing
     //  will be faster, but at the sake of poorer spatial resolution
     //  (sine waves won't look like sine waves)
-    let fs: f32 = 10.;
+    let fs: f32 = config.sample_freq;
 
     // The spatial frequency will be scaled to be within these bounds
-    let f_min_new: f32 = 0.001;
-    let f_max_new: f32 = 0.5;
+    let f_min_new: f32 = config.min_freq;
+    let f_max_new: f32 = config.max_freq;
 
     let (rows, cols) = img.dim();
-    // let lines = Array2::zeros((rows, cols));
 
     // Horizontal sample locations
     let x = Array1::range(0., cols as f32, 1. / fs);
@@ -198,10 +219,10 @@ fn make_lines(img: &Array2<u8>) -> Array2<f32> {
     // let frequencies = (u8::MAX - img) / u8::MAX;
     let frequencies = img.mapv(|x| f32::from(u8::MAX - x) / f32::from(u8::MAX));
 
-    // Global min. frequency
+    // Global min. frequency from image
     let f_min = frequencies.iter().copied().reduce(f32::min).unwrap();
 
-    // Global max. frequency
+    // Global max. frequency from image
     let f_max = frequencies.iter().copied().reduce(f32::max).unwrap();
 
     for r in 0..rows {
@@ -233,19 +254,19 @@ fn make_lines(img: &Array2<u8>) -> Array2<f32> {
 }
 
 fn main() {
-    let cli = Cli::parse();
+    let config = SinusoidShadingConfig::parse();
 
-    let mut out_path = cli.input.clone();
+    let mut out_path = config.input.clone();
     out_path.set_extension("svg");
 
-    let config = LineShadingConfig {
-        lines: cli.lines,
-        ..Default::default()
-    };
+    // let config = SinusoidShadingConfig {
+    //     lines: cli.lines,
+    //     ..Default::default()
+    // };
 
-    if let Ok(_) = process_image(cli.input.as_path(), out_path.as_path(), &config) {
+    if let Ok(_) = process_image(config.input.as_path(), out_path.as_path(), &config) {
         println!("Successfully saved image.");
     } else {
-        eprintln!("Could not read file at: {}", cli.input.display());
+        eprintln!("Could not read file at: {}", config.input.display());
     }
 }

@@ -5,6 +5,7 @@ use dioxus_web::Config;
 use image::{self, EncodableLayout, GenericImageView};
 
 const IMAGE: &[u8] = include_bytes!("../examples/example_1.png");
+const MAX_DIM: u32 = 1024;
 
 #[derive(PartialEq, Props)]
 struct RootProps {
@@ -122,8 +123,16 @@ fn App(cx: Scope<RootProps>) -> Element {
                                 None => return,
                             };
 
-                            let tmp_img = image::load_from_memory(file_contents.as_bytes())
+                            let mut tmp_img = image::load_from_memory(file_contents.as_bytes())
                                 .expect("Could not load image");
+
+                            // Resize image if too large
+                            let (w, h) = tmp_img.dimensions();
+
+                            if w > MAX_DIM || h > MAX_DIM {
+                                tmp_img = tmp_img.resize(MAX_DIM, MAX_DIM, image::imageops::FilterType::Triangle);
+                            }
+
                             let (width, height) = tmp_img.dimensions();
 
                             img.set(tmp_img);

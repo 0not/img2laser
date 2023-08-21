@@ -1,0 +1,74 @@
+[application]
+
+# dioxus project name
+name = "img2laser"
+
+# default platfrom
+# you can also use `dx serve/build --platform XXX` to use other platform
+# value: web | desktop
+default_platform = "web"
+
+# Web `build` & `serve` dist path
+out_dir = "dist"
+
+# resource (static) file folder
+asset_dir = "public"
+
+[web.app]
+
+# HTML title tag content
+title = "img2laser | Convert bitmap images to SVG"
+
+[web.watcher]
+
+index_on_404 = true
+
+watch_path = ["src"]
+
+# include `assets` in web platform
+[web.resource]
+
+# CSS style file
+style = []
+
+# Javascript code file
+script = []
+
+[web.resource.dev]
+
+# Javascript code file
+# serve: [dev-server] only
+script = []
+
+[application.plugins]
+
+available = true
+
+required = []
+
+[bundler]
+# Bundle identifier
+identifier = "io.github.img2laser"
+
+# Bundle publisher
+publisher = "img2laser"
+
+# Bundle icon
+icon = ["icons/icon.png"]
+
+# Bundle resources
+resources = ["public/*"]
+
+# Bundle copyright
+copyright = ""
+
+# Bundle category
+category = "Utility"
+
+# Bundle short description
+short_description = "Convert bitmap images to SVG."
+
+# Bundle long description
+long_description = """
+Create intriguing sinusoidal line shadings for laser engraving. Save output as SVG.
+"""

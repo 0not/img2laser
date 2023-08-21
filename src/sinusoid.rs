@@ -14,14 +14,15 @@ use svg::Document;
 
 // TODO: Add support for transparency (locations where no line will be drawn)
 // TODO: Add support for vertical sinusoids.
+// TODO: Add ability to resize image (to speed up subsequent processing)
 
 /// Default values
 const LINES: usize = 64;
 const WIDTH: usize = 512;
 const HEIGHT: usize = 512;
-const SAMPLE_FREQ: f32 = 10.;
+const SAMPLE_FREQ: f32 = 5.;
 const MIN_FREQ: f32 = 0.001;
-const MAX_FREQ: f32 = 0.5;
+const MAX_FREQ: f32 = 2.;
 const AMPLITUDE: f32 = 0.4;
 
 #[derive(Parser)]
@@ -222,7 +223,7 @@ fn make_lines(img: &Array2<u8>, config: &SinusoidShadingConfig) -> Array2<f32> {
         let mut f = Array1::<f32>::zeros(x.len());
 
         // Loop through the f array and sample the value from the freqs array
-        for n in 0..f.len() {
+        for n in 0..(f.len() - 1) {
             let i = (n as f32 / fs).floor() as usize;
             f[n] = freqs[i];
         }

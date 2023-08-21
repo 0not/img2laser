@@ -160,15 +160,20 @@ fn average_rows(img: &DynamicImage, config: &SinusoidShadingConfig) -> Array2<u8
         height as usize
     };
 
-    let row_height = height as usize / lines;
+    let row_height = height as f32 / lines as f32;
     let mut result = Array2::zeros((lines, width as usize));
 
     // Must cast to u32 or 'mean' operation will overflow.
     let img_array = img.to_luma8().into_ndarray2().mapv(|e| u32::from(e));
 
-    for n in 0..lines {
-        let start = n * row_height;
-        let end = (n + 1) * row_height;
+    for n in 0..(lines) {
+        let start = (n as f32 * row_height).round() as usize;
+        let end = ((n + 1) as f32 * row_height).round() as usize;
+        let end = if end > height as usize {
+            height as usize
+        } else {
+            end
+        };
         let row: Array1<u32> = img_array
             .slice(s![start..end, ..])
             .mean_axis(Axis(0))
@@ -204,10 +209,10 @@ fn make_lines(img: &Array2<u8>, config: &SinusoidShadingConfig) -> Array2<f32> {
     let frequencies = img.mapv(|x| f32::from(u8::MAX - x) / f32::from(u8::MAX));
 
     // Global min. frequency from image
-    let f_min = frequencies.iter().copied().reduce(f32::min).unwrap();
+    let f_min = frequencies.iter().copied().reduce(f32::min).unwrap_or(0.);
 
     // Global max. frequency from image
-    let f_max = frequencies.iter().copied().reduce(f32::max).unwrap();
+    let f_max = frequencies.iter().copied().reduce(f32::max).unwrap_or(0.);
 
     for r in 0..rows {
         // Linearly scale the frequencies in to the new range.

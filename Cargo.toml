@@ -1,17 +1,27 @@
 [package]
 name = "img2laser"
 version = "0.1.0"
+authors = ["Kyle Larsen"]
+license = "MIT"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 clap = { version = "4.1.10", features = ["derive"] }
-dioxus = "0.4.0"
-dioxus-web = "0.4.0"
+dioxus = { git = "https://github.com/DioxusLabs/dioxus.git" }
+dioxus-web = { git = "https://github.com/DioxusLabs/dioxus.git" }
+#futures = "0.3.28"
 image = "0.24.6"
 ndarray = "0.15.6"
 nshare = { version = "0.9.0", default-features = false, features = ["image", "ndarray"] }
-plotters = "0.3.4"
 svg = "0.13.0"
 thiserror = "1.0.44"
+
+# Enable a small amount of optimization in debug mode
+[profile.dev]
+opt-level = 1
+
+# Enable high optimizations for dependencies (incl. Bevy), but not for our code:
+[profile.dev.package."*"]
+opt-level = 3

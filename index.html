@@ -10,8 +10,8 @@
 <body>
   <div id="main"></div>
   <script type="module">
-    import init from "/./assets/dioxus/img2laser.js";
-    init("/./assets/dioxus/img2laser_bg.wasm").then(wasm => {
+    import init from "/img2laser/assets/dioxus/img2laser.js";
+    init("/img2laser/assets/dioxus/img2laser_bg.wasm").then(wasm => {
       if (wasm.__wbindgen_start == undefined) {
         wasm.main();
       }

@@ -18,6 +18,7 @@ asset_dir = "public"
 
 # HTML title tag content
 title = "img2laser | Convert bitmap images to SVG"
+base_path = "img2laser"
 
 [web.watcher]
 

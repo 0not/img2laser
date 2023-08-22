@@ -5,9 +5,14 @@ authors = ["Kyle Larsen"]
 license = "MIT"
 edition = "2021"
 
+# Reminder:
+# Push to git branch for demo site:
+# git subtree push --prefix dist origin gh-pages
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+base64 = "0.21.2"
 clap = { version = "4.1.10", features = ["derive"] }
 dioxus = { git = "https://github.com/DioxusLabs/dioxus.git" }
 dioxus-web = { git = "https://github.com/DioxusLabs/dioxus.git" }

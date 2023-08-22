@@ -25,7 +25,7 @@ const MIN_FREQ: f32 = 0.001;
 const MAX_FREQ: f32 = 2.;
 const AMPLITUDE: f32 = 0.4;
 
-#[derive(Parser)]
+#[derive(Parser, Clone, Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct SinusoidShadingConfig {
     /// Input image path
@@ -81,6 +81,36 @@ impl Default for SinusoidShadingConfig {
     }
 }
 
+impl SinusoidShadingConfig {
+    pub fn set_field(&mut self, field: &str, value: &str) {
+        match field {
+            // usize
+            "lines" => self.lines = value.parse().unwrap_or(LINES),
+            "width" => self.width = value.parse().unwrap_or(WIDTH),
+            "height" => self.height = value.parse().unwrap_or(HEIGHT),
+            // f32
+            "sample_freq" => self.sample_freq = value.parse().unwrap_or(SAMPLE_FREQ),
+            "min_freq" => self.min_freq = value.parse().unwrap_or(MIN_FREQ),
+            "max_freq" => self.max_freq = value.parse().unwrap_or(MAX_FREQ),
+            "amplitude" => self.amplitude = value.parse().unwrap_or(AMPLITUDE),
+            _ => return,
+        }
+    }
+
+    pub fn get_field(&self, field: &str) -> String {
+        match field {
+            "lines" => self.lines.to_string(),
+            "width" => self.width.to_string(),
+            "height" => self.height.to_string(),
+            "sample_freq" => self.sample_freq.to_string(),
+            "min_freq" => self.min_freq.to_string(),
+            "max_freq" => self.max_freq.to_string(),
+            "amplitude" => self.amplitude.to_string(),
+            _ => 0.to_string(),
+        }
+    }
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum ImageProcessError {
     #[error(transparent)]
@@ -126,6 +156,10 @@ pub fn process_image(img: &DynamicImage, config: &SinusoidShadingConfig) -> Docu
                 let x = x_scale * (xi as f32 / fs);
                 let y = amp * y + y_offset;
 
+                // This seems to save about 10% to 20% off the SVG size
+                // (The SVG as-is has too much wasted precision.)
+                //let p = 100.; // Precision
+                // vec![(x * p).round() / p, (y * p).round() / p]
                 vec![x, y]
             })
             .collect::<Vec<f32>>();
@@ -145,6 +179,7 @@ pub fn process_image(img: &DynamicImage, config: &SinusoidShadingConfig) -> Docu
 
     let document = Document::new()
         .set("viewBox", (0, 0, width, height))
+        .set("style", format!("width: {}; max-width: 100%;", width))
         .add(path);
 
     document

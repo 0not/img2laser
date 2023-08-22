@@ -1,0 +1,55 @@
+.slider-input > label, .number-input > label {
+    display: block;
+    padding-top: 0.5rem;
+}
+
+#download {
+    display: block;
+    margin-top: 2rem;
+}
+
+#input-image-panel > img {
+    max-width: 100%;
+}
+
+#flex-container {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#control-panel, #input-image-panel, #output-image-panel {
+    width: 100%;
+    padding: 0.5rem;
+}
+
+#control-panel {
+    order: 1;
+}
+
+#input-image-panel {
+    order: 3;
+}
+
+#output-image-panel {
+    order: 2;
+}
+
+/* tablet breakpoint */
+@media (min-width: 1024px) {
+    #control-panel {
+        flex: 1;
+        order: 1;
+    }
+
+    #input-image-panel, #output-image-panel {
+        flex: 3;
+    }
+
+    #input-image-panel {
+        order: 2;
+    }
+
+    #output-image-panel {
+        order: 3;
+    }
+}

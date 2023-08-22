@@ -73,6 +73,7 @@ fn SinusoidSvg<'a>(
 
     render! {
             div {
+                id: "svg-container",
                 width: "{config.width}px",
                 max_width: "100%",
                 display: "inline-block",
@@ -93,6 +94,8 @@ fn App(cx: Scope<RootProps>) -> Element {
         height: height as usize,
         ..Default::default()
     });
+
+    let create_eval = use_eval(cx);
 
     render! {
         div {
@@ -248,6 +251,34 @@ fn App(cx: Scope<RootProps>) -> Element {
                 step: 0.05,
                 on_input: move |event: FormEvent| {
                     config.with_mut(|c| c.amplitude = event.value.clone().parse().unwrap_or(2.))
+                }
+            }
+        },
+        div {
+            input {
+                r#type: "button",
+                id: "download",
+                value: "Download",
+                onclick: move |_| {
+                    create_eval(
+                        r#"
+                        // https://stackoverflow.com/a/46403589
+                        function saveSvg(svgEl, name) {
+                            svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+                            var svgData = svgEl.outerHTML;
+                            var preface = '<?xml version="1.0" standalone="no"?>\r\n';
+                            var svgBlob = new Blob([preface, svgData], {type:"image/svg+xml;charset=utf-8"});
+                            var svgUrl = URL.createObjectURL(svgBlob);
+                            var downloadLink = document.createElement("a");
+                            downloadLink.href = svgUrl;
+                            downloadLink.download = name;
+                            document.body.appendChild(downloadLink);
+                            downloadLink.click();
+                            document.body.removeChild(downloadLink);
+                        }
+                        saveSvg(document.getElementById('svg-container').children[0], 'sine_shaded_image.svg');
+                        "#
+                    ).unwrap();
                 }
             }
         },

@@ -48,7 +48,7 @@ pub fn SliderInput<'a, T: std::fmt::Display>(
             max: "{max}",
             step: "{step}",
             value: "{value}",
-            oninput: move |event| on_input.call(event),
+            onchange: move |event| on_input.call(event),
         },
         input {
             r#type: "number",
@@ -57,7 +57,7 @@ pub fn SliderInput<'a, T: std::fmt::Display>(
             step: "{step}",
             value: "{value}",
             style: "width: {width}em",
-            oninput: move |event| on_input.call(event),
+            onchange: move |event| on_input.call(event),
         }
     }
 }

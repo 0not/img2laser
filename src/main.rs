@@ -52,7 +52,7 @@ fn App(cx: Scope<RootProps>) -> Element {
     render! {
         header {
             h1 {
-                "img2laser - Sinusoidal Line Shading"
+                "img2laser - Sine Wave Line Shading"
             }
         },
         div {
@@ -71,7 +71,7 @@ fn App(cx: Scope<RootProps>) -> Element {
                     class: "number-input",
                     NumberInput {
                         id: "width".to_string(),
-                        label: "SVG width: ".to_string(),
+                        label: "Output SVG width: ".to_string(),
                         min: 1,
                         step: 1,
                     }
@@ -81,7 +81,7 @@ fn App(cx: Scope<RootProps>) -> Element {
                     class: "number-input",
                     NumberInput {
                         id: "height".to_string(),
-                        label: "SVG height: ".to_string(),
+                        label: "Output SVG height: ".to_string(),
                         min: 1,
                         step: 1,
                     }
@@ -102,6 +102,7 @@ fn App(cx: Scope<RootProps>) -> Element {
                 },
                 div {
                     class: "slider-input",
+                    style: "display: none;",
                     SliderInput {
                         id: "sample_freq".to_string(),
                         label: "Sample frequency: ".to_string(),
@@ -118,7 +119,7 @@ fn App(cx: Scope<RootProps>) -> Element {
                     class: "slider-input",
                     SliderInput {
                         id: "min_freq".to_string(),
-                        label: "Minimum frequency: ".to_string(),
+                        label: "Min. frequency: ".to_string(),
                         min: 0.001,
                         max: 0.1,
                         value: config.read().min_freq,
@@ -132,7 +133,7 @@ fn App(cx: Scope<RootProps>) -> Element {
                     class: "slider-input",
                     SliderInput {
                         id: "max_freq".to_string(),
-                        label: "Maximum frequency: ".to_string(),
+                        label: "Max. frequency: ".to_string(),
                         min: 0.1,
                         max: 10.,
                         value: config.read().max_freq,
@@ -165,12 +166,12 @@ fn App(cx: Scope<RootProps>) -> Element {
             },
             div {
                 id: "output-image-panel",
-                h2 { "Output" },
+                h2 { "Line Shaded Image" },
                 SinusoidSvg {},
             },
             div {
                 id: "input-image-panel",
-                h2 { "Input" },
+                h2 { "Original Image" },
                 img { src: "{image_to_base64(&img.read())}" },
             },
         },

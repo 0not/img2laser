@@ -20,9 +20,9 @@ use svg::Document;
 const LINES: usize = 64;
 const WIDTH: usize = 512;
 const HEIGHT: usize = 512;
-const SAMPLE_FREQ: f32 = 5.;
 const MIN_FREQ: f32 = 0.001;
 const MAX_FREQ: f32 = 2.;
+const SAMPLE_FREQ: f32 = 8.; // should be at least 2x MAX_FREQ
 const AMPLITUDE: f32 = 0.4;
 
 #[derive(Parser, Clone, Debug)]

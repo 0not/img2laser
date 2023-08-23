@@ -13,13 +13,15 @@ footer > div {
 }
 
 .slider-input > label, .number-input > label {
-    display: block;
+    display: inline-block;
     padding-top: 0.5rem;
+    width: 40%;
+    min-width: 10em;
 }
 
 #download {
     display: block;
-    margin-top: 2rem;
+    margin-top: 1rem;
 }
 
 #input-image-panel > img {
@@ -36,34 +38,18 @@ footer > div {
     padding: 0.5rem;
 }
 
-#control-panel {
-    order: 1;
-}
-
-#input-image-panel {
-    order: 3;
-}
-
-#output-image-panel {
-    order: 2;
-}
-
-/* tablet breakpoint */
 @media (min-width: 1024px) {
+    .slider-input > label, .number-input > label {
+        display: block;
+        padding-top: 0.5rem;
+        width: 100%;
+    }
+
     #control-panel {
         flex: 1;
-        order: 1;
     }
 
     #input-image-panel, #output-image-panel {
         flex: 3;
-    }
-
-    #input-image-panel {
-        order: 2;
-    }
-
-    #output-image-panel {
-        order: 3;
     }
 }

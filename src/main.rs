@@ -50,11 +50,16 @@ fn App(cx: Scope<RootProps>) -> Element {
     let config = use_shared_state::<SinusoidShadingConfig>(cx).unwrap();
 
     render! {
+        header {
+            h1 {
+                "img2laser - Sinusoidal Line Shading"
+            }
+        },
         div {
             id: "flex-container",
             div {
                 id: "control-panel",
-                h1 { "Controls" },
+                h2 { "Controls" },
                 div {
                     class: "file-input",
                     FileInput {
@@ -160,14 +165,41 @@ fn App(cx: Scope<RootProps>) -> Element {
             },
             div {
                 id: "output-image-panel",
-                h1 { "Output" },
+                h2 { "Output" },
                 SinusoidSvg {},
             },
             div {
                 id: "input-image-panel",
-                h1 { "Input" },
+                h2 { "Input" },
                 img { src: "{image_to_base64(&img.read())}" },
             },
+        },
+        footer {
+            div {
+                a {
+                    href: "https://github.com/0not/img2laser",
+                    "Source"
+                },
+                span { " | " },
+                a {
+                    href: "https://github.com/0not/img2laser/issues",
+                    "Report Bug"
+                },
+                span { " | " },
+                a {
+                    href: "https://kylelarsen.com/2021/03/13/sine-wave-line-shading/",
+                    "Blog Post"
+                },
+            },
+            div {
+                "© 2023 Kyle Larsen. Released under MIT license."
+            },
+            div {
+                r#"
+                This tool runs entirely in your browser. 
+                No data is transmitted in any way.
+                "#
+            }
         }
     }
 }

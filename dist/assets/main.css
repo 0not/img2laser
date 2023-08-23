@@ -1,3 +1,17 @@
+#main {
+    min-height: 98vh;
+    display: flex;
+    flex-direction: column;
+}
+
+footer {
+    margin: auto auto 0 auto;
+}
+
+footer > div {
+    text-align: center;
+}
+
 .slider-input > label, .number-input > label {
     display: block;
     padding-top: 0.5rem;
